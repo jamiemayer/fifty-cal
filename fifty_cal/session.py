@@ -2,6 +2,7 @@ import logging
 import os
 from contextlib import contextmanager
 from time import sleep
+from typing import Mapping
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -9,18 +10,17 @@ from selenium.webdriver.firefox.options import Options
 
 from fifty_cal.exceptions import UnableToLogoutException
 
-"""
-TODO: Document this module.
-"""
 
 log = logging.getLogger(__name__)
 
 
 class Session:
     """
-    Object for handling the user session.
+    Handle the user session.
 
-    Gets session and auth cookies.
+    Uses selenium with the Firefox driver in headless mode. This is so that session
+    and auth cookies can be retrieved by interacting with the relevant JavaScript on
+    the login page that cannot be done using a simple http request.
     """
 
     LOGOUT_RETRY_MAX_SECONDS: int = 120
@@ -33,9 +33,13 @@ class Session:
         self.driver = webdriver.Firefox(options=options, service_log_path=os.devnull)
 
     @contextmanager
-    def start_session(self, *, username: str, password: str):
+    def start_session(self, *, username: str, password: str) -> Mapping[str, str]:
         """
         Log in and get session and auth cookies.
+
+        Implemented as a Context Manager which will log in to a namesco email account
+        and yield the relevant cookies. Upon exiting scope, the user will be logged
+        out of the session.
         """
         log.debug("Browser Started")
         self.driver.get("http://webmail.names.co.uk/")
