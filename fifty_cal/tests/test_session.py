@@ -50,7 +50,7 @@ def test_exception_raised_if_unable_to_logout(session, mocker):
         "fifty_cal.session.webdriver.Firefox.find_element_by_class_name",
         side_effect=NoSuchElementException,
     )
-    session.LOGOUT_RETRY_MAX_SECONDS = 0
+    session.LOGOUT_RETRY_MAX_SECONDS = 1
     with pytest.raises(UnableToLogoutException):
         with session.start_session(username="", password=""):
             pass

@@ -6,10 +6,10 @@ from typing import Mapping
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.service import Service
 from selenium.webdriver.firefox.options import Options
 
 from fifty_cal.exceptions import UnableToLogoutException
-
 
 log = logging.getLogger(__name__)
 
@@ -30,7 +30,8 @@ class Session:
 
         options = Options()
         options.headless = True
-        self.driver = webdriver.Firefox(options=options, service_log_path=os.devnull)
+        self.driver = webdriver.Firefox(options=options)
+        self.driver.service.log_file = None
 
     @contextmanager
     def start_session(self, *, username: str, password: str) -> Mapping[str, str]:
@@ -65,7 +66,7 @@ class Session:
         wait 5 seconds for the page to load and try again up to a maximum of 2 minutes.
         """
         elapsed_seconds = 0
-        while elapsed_seconds <= self.LOGOUT_RETRY_MAX_SECONDS and self.logged_in:
+        while self.logged_in and elapsed_seconds <= self.LOGOUT_RETRY_MAX_SECONDS:
             try:
                 self.driver.find_element_by_class_name("button-logout").click()
                 self.logged_in = False
