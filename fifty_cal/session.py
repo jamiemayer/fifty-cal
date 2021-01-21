@@ -1,12 +1,10 @@
 import logging
-import os
 from contextlib import contextmanager
 from time import sleep
 from typing import Mapping
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.common.service import Service
 from selenium.webdriver.firefox.options import Options
 
 from fifty_cal.exceptions import UnableToLogoutException

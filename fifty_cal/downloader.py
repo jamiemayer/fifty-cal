@@ -2,6 +2,7 @@ import logging
 from typing import Mapping
 
 from requests import Session
+from vobject.base import Component, readOne
 
 from fifty_cal.exceptions import (
     HttpErrorException,
@@ -36,9 +37,13 @@ def get_requests_session(cookies: Mapping[str, str]) -> Session:
     return session
 
 
-def get_calendar(calendar_hash: str, session: Session) -> str:
+def get_calendar(calendar_hash: str, session: Session) -> Component:
     """
     Get the most recent version of the calendar.
+
+    Downloads the calendar specified in the `calendar_hash` - a unique identifier
+    that namesco uses to refer to a specific calendar. Parses and returns as a
+    vobject `Component` object.
     """
 
     url = f"{CALENDAR_URL}{calendar_hash}.ics&_action=feed"
@@ -53,4 +58,4 @@ def get_calendar(calendar_hash: str, session: Session) -> str:
         )
         raise ERROR_RESPONSE_CODES.get(response_code, HttpErrorException)
     else:
-        return calendar_request.text
+        return readOne(calendar_request.text)
