@@ -12,7 +12,7 @@ def local_cal():
     """
     Read test local calendar file into a `vobject.Component` object and return
     """
-    with open("fifty_cal/tests/resources/dummy_local.ics", 'r') as calendar:
+    with open("fifty_cal/tests/resources/dummy_local.ics", "r") as calendar:
         cal = readOne(calendar.read())
     return cal
 
@@ -22,7 +22,7 @@ def downloaded_cal():
     """
     Read test downloaded calendar file into a `vobject.Component` object and return
     """
-    with open("fifty_cal/tests/resources/dummy_downloaded.ics", 'r') as calendar:
+    with open("fifty_cal/tests/resources/dummy_downloaded.ics", "r") as calendar:
         cal = readOne(calendar.read())
     return cal
 
@@ -33,6 +33,7 @@ def test_no_diff_when_passed_identical_calendars(local_cal: Component):
     """
 
     cal_diff = CalendarDiff(cal1=local_cal, cal2=local_cal)
+    cal_diff.clean_calendars()
     cal_diff.get_diff()
 
     assert cal_diff.diff == []
@@ -42,6 +43,7 @@ def test_sequence_removed_when_cleaned(downloaded_cal: Component):
     """
     Clean the downloaded calendar and ensure that any `sequence attributes are removed."
     """
+
     def get_sequence_count(calendar: Component) -> int:
         """
         Count and return the number of events in a calendar with a `sequence` attribute.
@@ -52,9 +54,7 @@ def test_sequence_removed_when_cleaned(downloaded_cal: Component):
                 sequences += 1
         return sequences
 
-
     assert get_sequence_count(downloaded_cal) == 2
-
 
     cal_diff = CalendarDiff(cal1=downloaded_cal, cal2=downloaded_cal)
 
@@ -78,20 +78,20 @@ def test_events_are_recognised_as_the_same_after_sequence_is_removed(downloaded_
     """
 
     original = downloaded_cal
-    start = original.contents['vevent'][0].contents['dtstart'][0].value
-    end = original.contents['vevent'][0].contents['dtend'][0].value
-    sequence = int(original.contents['vevent'][0].contents["sequence"][0].value)
+    start = original.contents["vevent"][0].contents["dtstart"][0].value
+    end = original.contents["vevent"][0].contents["dtend"][0].value
+    sequence = int(original.contents["vevent"][0].contents["sequence"][0].value)
 
     # Update the original event by shifting it forward by one day
     update = Component.duplicate(downloaded_cal)
-    new_start = dt.date(year=start.year, month=start.month, day=start.day+1)
+    new_start = dt.date(year=start.year, month=start.month, day=start.day + 1)
     new_end = dt.date(year=end.year, month=end.month, day=end.day + 1)
 
-    update.contents['vevent'][0].contents['dtstart'][0].value = new_start
-    update.contents['vevent'][0].contents['dtend'][0].value = new_end
+    update.contents["vevent"][0].contents["dtstart"][0].value = new_start
+    update.contents["vevent"][0].contents["dtend"][0].value = new_end
     # Increment sequence by 1
     new_sequence = str(sequence + 1)
-    update.contents['vevent'][0].contents["sequence"][0].value = new_sequence
+    update.contents["vevent"][0].contents["sequence"][0].value = new_sequence
 
     cal_diff = CalendarDiff(cal1=original, cal2=update)
 
@@ -117,6 +117,3 @@ def test_events_are_recognised_as_the_same_after_sequence_is_removed(downloaded_
     expected_attributes = ["uid", "DTSTART", "DTEND"]
     assert list(cal_diff.diff[0][0].contents.keys()) == expected_attributes
     assert list(cal_diff.diff[0][1].contents.keys()) == expected_attributes
-
-
-
