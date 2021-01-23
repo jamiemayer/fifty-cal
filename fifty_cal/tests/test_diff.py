@@ -90,7 +90,7 @@ def test_events_are_recognised_as_the_same_after_sequence_is_removed(downloaded_
     update.contents['vevent'][0].contents['dtstart'][0].value = new_start
     update.contents['vevent'][0].contents['dtend'][0].value = new_end
     # Increment sequence by 1
-    new_sequence = str(sequence +1)
+    new_sequence = str(sequence + 1)
     update.contents['vevent'][0].contents["sequence"][0].value = new_sequence
 
     cal_diff = CalendarDiff(cal1=original, cal2=update)
@@ -113,6 +113,10 @@ def test_events_are_recognised_as_the_same_after_sequence_is_removed(downloaded_
     # None should now not be in the diff.
     assert None not in cal_diff.diff
 
+    # The contents should contain only the UID and the attributes that differ.
+    expected_attributes = ["uid", "DTSTART", "DTEND"]
+    assert list(cal_diff.diff[0][0].contents.keys()) == expected_attributes
+    assert list(cal_diff.diff[0][1].contents.keys()) == expected_attributes
 
 
 

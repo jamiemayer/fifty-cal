@@ -37,8 +37,7 @@ class CalendarDiff:
                     delattr(event, "sequence")
 
         self.cal1_cleaned = cal1_cleaned
-        self.cal2_cleaned = cal1_cleaned
-
+        self.cal2_cleaned = cal2_cleaned
 
     def get_diff(self):
         """
