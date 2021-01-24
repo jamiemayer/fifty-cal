@@ -19,6 +19,7 @@ class CalendarDiff:
         """
         self.cal1 = cal1
         self.cal2 = cal2
+        self.diff = []
 
     def clean_calendars(self):
         """
@@ -43,4 +44,5 @@ class CalendarDiff:
         """
         Get the diff between cal1 and cal2
         """
+
         self.diff = diff(self.cal1_cleaned, self.cal2_cleaned)
