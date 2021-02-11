@@ -5,7 +5,11 @@ from typing import Mapping
 
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
 
 from fifty_cal.exceptions import UnableToLogoutException
 
@@ -27,9 +31,10 @@ class Session:
         self.logged_in = False
 
         options = Options()
-        options.headless = True
+        # options.headless = True
         self.driver = webdriver.Firefox(options=options)
         self.driver.service.log_file = None
+        self.wait = WebDriverWait(self.driver, 60)
 
     @contextmanager
     def start_session(self, *, username: str, password: str) -> Mapping[str, str]:
@@ -44,16 +49,58 @@ class Session:
         self.driver.get("http://webmail.names.co.uk/")
         log.debug("Logging in.")
 
-        self.driver.find_element_by_id("rcmloginuser").send_keys(username)
-        self.driver.find_element_by_id("rcmloginpwd").send_keys(password)
-        self.driver.find_element_by_id("rcmloginsubmit").click()
+        username_field = self.driver.find_element_by_id("rcmloginuser")
+        password_field = self.driver.find_element_by_id("rcmloginpwd")
+        login_button = self.driver.find_element_by_id("rcmloginsubmit")
+
+
+        actions = ActionChains(self.driver)
+        actions.send_keys_to_element(username_field, username)
+        actions.send_keys_to_element(password_field, password)
+        actions.click(login_button)
+        actions.perform()
 
         cookies = self.driver.get_cookies()
         self.logged_in = True
+        self.wait.until(
+            expected_conditions.presence_of_element_located(
+                (By.ID, "rcmbtn110")
+            )
+        )
+        calendar_button = self.driver.find_element_by_id("rcmbtn110")
+        # For some reason we have to click twice.
+        actions.click(calendar_button)
+        actions.click(calendar_button)
+        actions.perform()
+
+
+
+        self.get_calendar_map()
         yield {cookie["name"]: cookie["value"] for cookie in cookies}
         log.debug("Session exited. Logging out.")
         self.logout()
         self.driver.quit()
+
+    def get_calendar_map(self):
+        """
+        Get a mapping of calendar name to the calendar ID.
+        """
+        self.wait.until(
+            expected_conditions.presence_of_element_located(
+                (By.ID, "calendarslist")
+            )
+        )
+
+        cal_map = {}
+
+        calendar_list = self.driver.find_element(By.ID, "calendarslist")
+        calendars = calendar_list.find_elements(By.TAG_NAME, "li")
+        for calendar in calendars:
+            cal_attributes = calendar.find_element(By.CLASS_NAME, 'calname')
+            cal_map[cal_attributes.text] = cal_attributes.get_attribute('id')[3:]
+
+        return cal_map
+
 
     def logout(self):
         """
@@ -62,6 +109,8 @@ class Session:
         Sometimes the session can exit before the page has had a chance to load,
         causing a `NoSuchElementException` to be raised. If this happens,
         wait 5 seconds for the page to load and try again up to a maximum of 2 minutes.
+
+        # TODO: Change this to use the `wait_until` method.
         """
         elapsed_seconds = 0
         while self.logged_in and elapsed_seconds <= self.LOGOUT_RETRY_MAX_SECONDS:
