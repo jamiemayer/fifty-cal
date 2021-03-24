@@ -31,7 +31,7 @@ class Session:
         self.logged_in = False
 
         options = Options()
-        # options.headless = True
+        options.headless = True
         self.driver = webdriver.Firefox(options=options)
         self.driver.service.log_file = None
         self.wait = WebDriverWait(self.driver, 60)
