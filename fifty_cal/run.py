@@ -2,6 +2,8 @@ import sys
 from argparse import ArgumentParser
 from typing import Mapping, Sequence
 
+import yaml
+
 from fifty_cal.exceptions import ArgumentConflictException
 
 
@@ -67,6 +69,9 @@ class Command:
         Load the YAML configuration file and store the contents in the relevant
         instance variables.
         """
+        with open(config_path) as config:
+            self.calendar_ids = yaml.full_load(config)[0]
+
 
     def download(self):
         """
