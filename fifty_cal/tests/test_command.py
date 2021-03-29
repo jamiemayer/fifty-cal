@@ -62,11 +62,6 @@ def test_load_config(mocker):
     """
     YAML Config loaded and contents stored in relevant instance variable.
     """
-    """
-    
-    """
-
-
     with NamedTemporaryFile(mode='w+', suffix=".yaml", delete=False) as config:
         config.write("- cal_ids:\n")
         config.write("  - Jamie\n")
