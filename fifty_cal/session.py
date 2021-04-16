@@ -37,7 +37,7 @@ class Session:
         self.wait = WebDriverWait(self.driver, 60)
 
     @contextmanager
-    def start_session(self, *, username: str, password: str) -> Mapping[str, str]:
+    def start_session(self, username: str, password: str) -> Mapping[str, str]:
         """
         Log in and get session and auth cookies.
 
@@ -53,7 +53,6 @@ class Session:
         password_field = self.driver.find_element_by_id("rcmloginpwd")
         login_button = self.driver.find_element_by_id("rcmloginsubmit")
 
-
         actions = ActionChains(self.driver)
         actions.send_keys_to_element(username_field, username)
         actions.send_keys_to_element(password_field, password)
@@ -63,17 +62,13 @@ class Session:
         cookies = self.driver.get_cookies()
         self.logged_in = True
         self.wait.until(
-            expected_conditions.presence_of_element_located(
-                (By.ID, "rcmbtn110")
-            )
+            expected_conditions.presence_of_element_located((By.ID, "rcmbtn110"))
         )
         calendar_button = self.driver.find_element_by_id("rcmbtn110")
         # For some reason we have to click twice.
         actions.click(calendar_button)
         actions.click(calendar_button)
         actions.perform()
-
-
 
         self.get_calendar_map()
         yield {cookie["name"]: cookie["value"] for cookie in cookies}
@@ -86,9 +81,7 @@ class Session:
         Get a mapping of calendar name to the calendar ID.
         """
         self.wait.until(
-            expected_conditions.presence_of_element_located(
-                (By.ID, "calendarslist")
-            )
+            expected_conditions.presence_of_element_located((By.ID, "calendarslist"))
         )
 
         cal_map = {}
@@ -96,11 +89,10 @@ class Session:
         calendar_list = self.driver.find_element(By.ID, "calendarslist")
         calendars = calendar_list.find_elements(By.TAG_NAME, "li")
         for calendar in calendars:
-            cal_attributes = calendar.find_element(By.CLASS_NAME, 'calname')
-            cal_map[cal_attributes.text] = cal_attributes.get_attribute('id')[3:]
+            cal_attributes = calendar.find_element(By.CLASS_NAME, "calname")
+            cal_map[cal_attributes.text] = cal_attributes.get_attribute("id")[3:]
 
         return cal_map
-
 
     def logout(self):
         """

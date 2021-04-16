@@ -13,7 +13,6 @@ def setup_mocks(mocker):
     webdriver = mocker.patch("fifty_cal.session.webdriver")
     firefox = mocker.MagicMock()
 
-
     get_cookies = mocker.MagicMock()
     get_cookies.return_value = [{"name": "test", "value": "test"}]
 
