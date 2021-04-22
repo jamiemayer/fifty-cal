@@ -83,7 +83,7 @@ class Command:
         instance variables.
         """
         with open(config_path) as config_file:
-            config = yaml.load(config_file)
+            config = yaml.safe_load(config_file)
         try:
             self.username = config["username"]
         except KeyError:
