@@ -15,6 +15,38 @@ def mock_session(mocker):
     return mocker.patch("fifty_cal.run.Session")
 
 
+@pytest.fixture(autouse=True)
+def mock_publish(mocker):
+    """
+    Mock the publish method of Command.
+    """
+    return mocker.patch("fifty_cal.run.Command.publish")
+
+
+@pytest.fixture(autouse=True)
+def mock_get_requests_session(mocker):
+    """
+    Mock the requests.Session class.
+    """
+    return mocker.patch("fifty_cal.downloader.get_requests_session")
+
+
+@pytest.fixture()
+def mock_save(mocker):
+    """
+    Mock out the fifty_cal.Session object imported in the run.py module
+    """
+    return mocker.patch("fifty_cal.run.Command.save_calendar")
+
+
+@pytest.fixture()
+def mock_update_local(mocker):
+    """
+    Mock out the fifty_cal.Session object imported in the run.py module
+    """
+    return mocker.patch("fifty_cal.run.Command.update_local")
+
+
 @pytest.fixture()
 def mock_download(mocker):
     """
@@ -23,12 +55,12 @@ def mock_download(mocker):
     return mocker.patch("fifty_cal.run.Command.download")
 
 
-@pytest.fixture(autouse=True)
-def mock_publish(mocker):
+@pytest.fixture()
+def mock_get_calendar(mocker):
     """
-    Mock the publish method of Command.
+    Mock the fifty_cal.downloader.get_calendar function.
     """
-    return mocker.patch("fifty_cal.run.Command.publish")
+    return mocker.patch("fifty_cal.run.downloader.get_calendar")
 
 
 @pytest.fixture()
@@ -45,6 +77,7 @@ def standard_config():
         config.write("cal_ids:\n")
         config.write("  person_1: AB1234\n")
         config.write("  person_2: AB4321\n")
+        config.writelines("calendar_url: https://example.com/\n")
     yield config
     os.remove(config.name)
 
@@ -102,7 +135,8 @@ def test_load_config(standard_config, mock_download):
     [
         (0, "No username provided in config file."),
         (1, "No password provided in config file."),
-        (2, "No output path provided."),
+        (2, "No calendar URL provided in config file."),
+        (3, "No output path provided."),
     ],
 )
 def test_invalid_config_raises_errors(line_to_omit, expected_error_message):
@@ -112,6 +146,7 @@ def test_invalid_config_raises_errors(line_to_omit, expected_error_message):
     required_values = [
         "username: test_user",
         "password: allYourBase",
+        "calendar_url: https://example.com/",
         "output_path: /test/",
     ]
 
@@ -128,7 +163,9 @@ def test_invalid_config_raises_errors(line_to_omit, expected_error_message):
         assert e.value.args[0] == expected_error_message
 
 
-def test_get_calendar_called_with_calendar_ids(standard_config, mocker):
+def test_get_calendar_called_with_calendar_ids(
+    standard_config, mocker, mock_save, mock_get_calendar
+):
     """
     Management Command makes a call to downloader.get_calendar with expected args.
     """
@@ -138,12 +175,19 @@ def test_get_calendar_called_with_calendar_ids(standard_config, mocker):
         "fifty_cal.downloader.get_requests_session", return_value=request_session
     )
 
-    get_calendar = mocker.patch(
-        "fifty_cal.run.downloader.get_calendar",
-    )
-
     Command([standard_config.name])
 
-    assert get_calendar.call_count == 2
-    assert get_calendar.call_args_list[0][0] == ("AB1234", request_session)
-    assert get_calendar.call_args_list[1][0] == ("AB4321", request_session)
+    assert mock_get_calendar.call_count == 2
+    assert mock_get_calendar.call_args_list[0][0] == ("AB1234", request_session)
+    assert mock_get_calendar.call_args_list[1][0] == ("AB4321", request_session)
+
+
+def test_update_local_not_called_when_new_calendar_downloaded(
+    mocker, mock_save, mock_update_local, mock_get_calendar, standard_config
+):
+    """
+    Nothing updated when a downloaded calendar doesn't exist locally.
+    """
+    Command([standard_config.name])
+
+    assert mock_update_local.call_count == 0

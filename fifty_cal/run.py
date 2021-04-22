@@ -1,12 +1,16 @@
 import logging
+import os
 import sys
 from argparse import ArgumentParser
 from typing import Mapping, Sequence
 
 import yaml
+from vobject.base import Component, readOne
 
 from fifty_cal import downloader
+from fifty_cal.diff import CalendarDiff
 from fifty_cal.exceptions import ArgumentConflictException, ConfigurationException
+from fifty_cal.merge import merge
 from fifty_cal.session import Session
 
 log = logging.getLogger(__name__)
@@ -43,6 +47,7 @@ class Command:
         self.session: Session = Session()
         self.username: str = ""
         self.password: str = ""
+        self.calendar_url: str = ""
         self.output_path: str = ""
         run_methods = {"download": self.download, "publish": self.publish}
 
@@ -93,6 +98,10 @@ class Command:
         except KeyError:
             raise ConfigurationException("No password provided in config file.")
         try:
+            self.calendar_url = config["calendar_url"]
+        except KeyError:
+            raise ConfigurationException("No calendar URL provided in config file.")
+        try:
             self.output_path = config["output_path"]
         except KeyError:
             raise ConfigurationException("No output path provided.")
@@ -107,17 +116,40 @@ class Command:
         """
         requests_session = downloader.get_requests_session(cookies)
         for person, cal_id in self.calendar_ids.items():
-            downloader.get_calendar(cal_id, requests_session)
+            downloaded_calendar = downloader.get_calendar(cal_id, requests_session)
+            calendar_file_path = f"{self.output_path}{person}.ics"
+            # If there is already a local version of this calendar, update it
+            # ensuring that the downloaded and local copies are both in sync.
+            if os.path.isfile(calendar_file_path):
+                calendar = self.update_local(downloaded_calendar, calendar_file_path)
+            else:
+                calendar = downloaded_calendar
+            self.save_calendar(calendar, calendar_file_path)
+
 
     def publish(self, cookies: Mapping[str, str]):
         """
         Run the command in Publish mode.
         """
 
-    def save_calendar(self):
+    def update_local(self, downloaded_calendar: Component, filepath: str) -> Component:
         """
-        Save the downloaded calendar to disk
+        Update the existing local copy of the specified calendar file.
         """
+        with open(filepath, "r") as existing_file:
+            existing_calendar = readOne(existing_file.read())
+
+        cal_diff = CalendarDiff(cal1=existing_calendar, cal2=downloaded_calendar)
+        return merge(diff=cal_diff)
+
+
+
+    def save_calendar(self, calendar: Component, filepath: str):
+        """
+        Save the downloaded calendar to disk.
+        """
+        with open(filepath, "w+") as calendar_file:
+            calendar_file.writelines(calendar.lines())
 
 
 if __name__ == "__main__":
