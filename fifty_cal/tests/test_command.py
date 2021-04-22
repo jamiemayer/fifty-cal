@@ -7,81 +7,6 @@ from fifty_cal.exceptions import ConfigurationException
 from fifty_cal.run import Command
 
 
-@pytest.fixture(autouse=True)
-def mock_session(mocker):
-    """
-    Mock out the fifty_cal.Session object imported in the run.py module
-    """
-    return mocker.patch("fifty_cal.run.Session")
-
-
-@pytest.fixture(autouse=True)
-def mock_publish(mocker):
-    """
-    Mock the publish method of Command.
-    """
-    return mocker.patch("fifty_cal.run.Command.publish")
-
-
-@pytest.fixture(autouse=True)
-def mock_get_requests_session(mocker):
-    """
-    Mock the requests.Session class.
-    """
-    return mocker.patch("fifty_cal.downloader.get_requests_session")
-
-
-@pytest.fixture()
-def mock_save(mocker):
-    """
-    Mock out the fifty_cal.Session object imported in the run.py module
-    """
-    return mocker.patch("fifty_cal.run.Command.save_calendar")
-
-
-@pytest.fixture()
-def mock_update_local(mocker):
-    """
-    Mock out the fifty_cal.Session object imported in the run.py module
-    """
-    return mocker.patch("fifty_cal.run.Command.update_local")
-
-
-@pytest.fixture()
-def mock_download(mocker):
-    """
-    Mock the download method of Command.
-    """
-    return mocker.patch("fifty_cal.run.Command.download")
-
-
-@pytest.fixture()
-def mock_get_calendar(mocker):
-    """
-    Mock the fifty_cal.downloader.get_calendar function.
-    """
-    return mocker.patch("fifty_cal.run.downloader.get_calendar")
-
-
-@pytest.fixture()
-def standard_config():
-    """
-    Create a temporary YAML config file in memory and yield it.
-
-    Delete upon exiting.
-    """
-    with NamedTemporaryFile(mode="w+", suffix=".yaml", delete=False) as config:
-        config.writelines("username: test_user\n")
-        config.writelines("password: allYourBase\n")
-        config.writelines("output_path: /test/\n")
-        config.write("cal_ids:\n")
-        config.write("  person_1: AB1234\n")
-        config.write("  person_2: AB4321\n")
-        config.writelines("calendar_url: https://example.com/\n")
-    yield config
-    os.remove(config.name)
-
-
 def test_runs_in_download_mode_by_default(mocker, mock_download):
     """
     Runs in Download mode when no optional args are specified.
@@ -183,7 +108,7 @@ def test_get_calendar_called_with_calendar_ids(
 
 
 def test_update_local_not_called_when_new_calendar_downloaded(
-    mocker, mock_save, mock_update_local, mock_get_calendar, standard_config
+    mock_save, mock_update_local, mock_get_calendar, standard_config
 ):
     """
     Nothing updated when a downloaded calendar doesn't exist locally.
@@ -191,3 +116,51 @@ def test_update_local_not_called_when_new_calendar_downloaded(
     Command([standard_config.name])
 
     assert mock_update_local.call_count == 0
+
+
+def test_update_local_called_when_downloaded_calendar_already_exists(
+    mock_save, mock_update_local, mock_get_calendar, mocker
+):
+    """
+    When an update to an existing calendar is downloaded, the two should be merged.
+    """
+    downloaded_calendar_mock = mocker.MagicMock()
+    mock_get_calendar.return_value = downloaded_calendar_mock
+
+    with NamedTemporaryFile(mode="w+", suffix=".ics", delete=False) as calendar_file:
+        calendar_file.write("placeholder")
+    mock_cal_file_path = calendar_file.name
+
+    with NamedTemporaryFile(mode="w+", suffix=".yaml", delete=False) as config:
+        config.writelines("username: test_user\n")
+        config.writelines("password: allYourBase\n")
+        config.writelines("output_path: /tmp/\n")
+        config.write("cal_ids:\n")
+        config.write(f"  {mock_cal_file_path.split('/')[-1].split('.')[0]}: AB1234\n")
+        config.writelines("calendar_url: https://example.com/\n")
+
+    Command([config.name])
+
+    os.remove(config.name)
+    os.remove(calendar_file.name)
+
+    assert mock_update_local.call_args_list[0][0] == (
+        downloaded_calendar_mock,
+        f"{mock_cal_file_path}",
+    )
+
+
+def test_full_download_process(config_factory):
+    """
+    Test the entire download process from running the command and saving the file.
+    """
+
+    with open("fifty_cal/tests/resources/dummy_local.ics", "r") as local_calendar:
+        with NamedTemporaryFile(mode="w+", suffix=".ics", delete=False) as temp_local:
+            for line in local_calendar.read():
+                temp_local.write(line)
+    mock_local_path = temp_local.name
+
+    # TODO: Finish this test
+    pass
+
