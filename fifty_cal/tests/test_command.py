@@ -103,8 +103,16 @@ def test_get_calendar_called_with_calendar_ids(
     Command([standard_config.name])
 
     assert mock_get_calendar.call_count == 2
-    assert mock_get_calendar.call_args_list[0][0] == ("AB1234", request_session)
-    assert mock_get_calendar.call_args_list[1][0] == ("AB4321", request_session)
+    assert mock_get_calendar.call_args_list[0][0] == (
+        "AB1234",
+        request_session,
+        "https://example.com/",
+    )
+    assert mock_get_calendar.call_args_list[1][0] == (
+        "AB4321",
+        request_session,
+        "https://example.com/",
+    )
 
 
 def test_update_local_not_called_when_new_calendar_downloaded(
@@ -163,11 +171,9 @@ def test_full_download_process(
                 temp_local.write(line)
     mock_local_cal_path = temp_local.name
 
-
-
     config = config_factory(
         output_path="/tmp/",
-        cal_ids=[f"{mock_local_cal_path.split('/')[-1].split('.')[0]}: "]
+        cal_ids=[f"{mock_local_cal_path.split('/')[-1].split('.')[0]}: "],
     )
 
     Command([config.name])
@@ -175,4 +181,3 @@ def test_full_download_process(
     mock_get_calendar.assert_called_once()
     mock_update_local.assert_called_once()
     mock_save.assert_called_once()
-

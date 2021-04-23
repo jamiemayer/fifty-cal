@@ -116,7 +116,9 @@ class Command:
         """
         requests_session = downloader.get_requests_session(cookies)
         for person, cal_id in self.calendar_ids.items():
-            downloaded_calendar = downloader.get_calendar(cal_id, requests_session)
+            downloaded_calendar = downloader.get_calendar(
+                cal_id, requests_session, self.calendar_url
+            )
             calendar_file_path = f"{self.output_path}{person}.ics"
             # If there is already a local version of this calendar, update it
             # ensuring that the downloaded and local copies are both in sync.
@@ -125,7 +127,6 @@ class Command:
             else:
                 calendar = downloaded_calendar
             self.save_calendar(calendar, calendar_file_path)
-
 
     def publish(self, cookies: Mapping[str, str]):
         """
@@ -141,8 +142,6 @@ class Command:
 
         cal_diff = CalendarDiff(cal1=existing_calendar, cal2=downloaded_calendar)
         return merge(diff=cal_diff)
-
-
 
     def save_calendar(self, calendar: Component, filepath: str):
         """
