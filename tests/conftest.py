@@ -9,7 +9,7 @@ def mock_session(mocker):
     """
     Mock out the fifty_cal.Session object imported in the run.py module
     """
-    return mocker.patch("fifty_cal.run.Session")
+    return mocker.patch("run.Session")
 
 
 @pytest.fixture(autouse=True)
@@ -17,7 +17,7 @@ def mock_publish(mocker):
     """
     Mock the publish method of Command.
     """
-    return mocker.patch("fifty_cal.run.Command.publish")
+    return mocker.patch("run.Command.publish")
 
 
 @pytest.fixture(autouse=True)
@@ -33,7 +33,7 @@ def mock_save(mocker):
     """
     Mock out the fifty_cal.Session object imported in the run.py module
     """
-    return mocker.patch("fifty_cal.run.Command.save_calendar")
+    return mocker.patch("run.Command.save_calendar")
 
 
 @pytest.fixture()
@@ -41,7 +41,7 @@ def mock_update_local(mocker):
     """
     Mock out the fifty_cal.Session object imported in the run.py module
     """
-    return mocker.patch("fifty_cal.run.Command.update_local")
+    return mocker.patch("run.Command.update_local")
 
 
 @pytest.fixture()
@@ -49,7 +49,7 @@ def mock_download(mocker):
     """
     Mock the download method of Command.
     """
-    return mocker.patch("fifty_cal.run.Command.download")
+    return mocker.patch("run.Command.download")
 
 
 @pytest.fixture()
@@ -57,7 +57,7 @@ def mock_get_calendar(mocker):
     """
     Mock the fifty_cal.downloader.get_calendar function.
     """
-    return mocker.patch("fifty_cal.run.downloader.get_calendar")
+    return mocker.patch("run.downloader.get_calendar")
 
 
 @pytest.fixture()

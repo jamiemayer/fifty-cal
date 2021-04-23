@@ -4,14 +4,14 @@ from tempfile import NamedTemporaryFile
 import pytest
 
 from fifty_cal.exceptions import ConfigurationException
-from fifty_cal.run import Command
+from run import Command
 
 
 def test_runs_in_download_mode_by_default(mocker, mock_download):
     """
     Runs in Download mode when no optional args are specified.
     """
-    mocker.patch("fifty_cal.run.Command.load_config")
+    mocker.patch("run.Command.load_config")
     download = mock_download
 
     Command([""])
@@ -23,7 +23,7 @@ def test_runs_in_download_mode_when_download_option_provided(mocker, mock_downlo
     """
     Runs in Download mode when `--download` option is provided.
     """
-    mocker.patch("fifty_cal.run.Command.load_config")
+    mocker.patch("run.Command.load_config")
     download = mock_download
 
     Command(["", "--download"])
@@ -35,7 +35,7 @@ def test_runs_in_publish_mode_when_download_option_provided(mocker, mock_publish
     """
     Runs in Download mode when `--download` option is provided.
     """
-    mocker.patch("fifty_cal.run.Command.load_config")
+    mocker.patch("run.Command.load_config")
     publish = mock_publish
 
     Command(["", "--publish"])

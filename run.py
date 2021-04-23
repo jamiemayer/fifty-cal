@@ -148,7 +148,10 @@ class Command:
         Save the downloaded calendar to disk.
         """
         with open(filepath, "w+") as calendar_file:
-            calendar_file.writelines(calendar.lines())
+            try:
+                calendar_file.write(calendar.serialize())
+            except StopIteration:
+                log.info("Finished Writing")
 
 
 if __name__ == "__main__":
