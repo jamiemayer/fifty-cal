@@ -150,7 +150,9 @@ def test_update_local_called_when_downloaded_calendar_already_exists(
     )
 
 
-def test_full_download_process(config_factory):
+def test_full_download_process(
+    config_factory, mock_get_calendar, mock_update_local, mock_save
+):
     """
     Test the entire download process from running the command and saving the file.
     """
@@ -159,8 +161,18 @@ def test_full_download_process(config_factory):
         with NamedTemporaryFile(mode="w+", suffix=".ics", delete=False) as temp_local:
             for line in local_calendar.read():
                 temp_local.write(line)
-    mock_local_path = temp_local.name
+    mock_local_cal_path = temp_local.name
 
-    # TODO: Finish this test
-    pass
+
+
+    config = config_factory(
+        output_path="/tmp/",
+        cal_ids=[f"{mock_local_cal_path.split('/')[-1].split('.')[0]}: "]
+    )
+
+    Command([config.name])
+
+    mock_get_calendar.assert_called_once()
+    mock_update_local.assert_called_once()
+    mock_save.assert_called_once()
 

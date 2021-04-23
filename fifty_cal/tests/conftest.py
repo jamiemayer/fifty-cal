@@ -84,23 +84,29 @@ def config_factory():
     """
     Factory for creating temp config files.
     """
+    config_path = ""
+
     def factory(
-        username="test_user",
-        output_path="/path/",
-        cal_ids=["person_1: AB1234"],
-        calendar_url="https:example.com",
+            username="test_user",
+            output_path="/path/",
+            cal_ids=["person_1: AB1234"],
+            calendar_url="https:example.com",
     ):
         """
         Create and yield a temporary config file and then remove.
         """
+        nonlocal config_path
         with NamedTemporaryFile(mode="w+", suffix=".yaml", delete=False) as config:
-            config.writelines(f"username: {username}\n")
-            config.writelines("password: allYourBase\n")
-            config.writelines(f"output_path: {output_path}\n")
+            config.write(f"username: {username}\n")
+            config.write("password: allYourBase\n")
+            config.write(f"output_path: {output_path}\n")
             config.write("cal_ids:\n")
             for cal_id in cal_ids:
                 config.write(f"  {cal_id}\n")
-            config.writelines(f"calendar_url: {calendar_url}\n")
-        yield config
+            config.write(f"calendar_url: {calendar_url}\n")
+        config_path = config.name
+        return config
 
-    return factory()
+    yield factory
+    os.remove(config_path)
+
