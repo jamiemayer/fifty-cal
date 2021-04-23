@@ -24,7 +24,6 @@ def test_get_called_on_correct_calendar_url(mocker):
     """
     Test that the http GET request is sent to the correct calendar URL.
     """
-    mocker.patch("fifty_cal.downloader.CALENDAR_URL", "test_url")
     mocker.patch("fifty_cal.downloader.readOne")
     calendar_hash = "foo"
 
@@ -34,7 +33,7 @@ def test_get_called_on_correct_calendar_url(mocker):
 
     session.get.return_value = request
 
-    get_calendar(calendar_hash=calendar_hash, session=session)
+    get_calendar(calendar_hash=calendar_hash, session=session, calendar_url='test_url')
 
     assert session.get.call_args[0][0] == "test_urlfoo.ics&_action=feed"
 
@@ -52,8 +51,6 @@ def test_exceptions_thrown_on_non_200_response_codes(mocker, status_code, except
     """
     Test that the calendar is returned from the http response
     """
-    mocker.patch("fifty_cal.downloader.CALENDAR_URL", "test_url")
-
     session = mocker.MagicMock()
     request = mocker.MagicMock()
     request.status_code = status_code
@@ -61,4 +58,4 @@ def test_exceptions_thrown_on_non_200_response_codes(mocker, status_code, except
     session.get.return_value = request
 
     with pytest.raises(exception):
-        get_calendar(calendar_hash="", session=session)
+        get_calendar(calendar_hash="", session=session, calendar_url="test_url")

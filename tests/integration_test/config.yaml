@@ -1,0 +1,6 @@
+username: jamiem@noriker.co.uk
+password: Jm290405b!
+output_path: /home/jamiem/Code/fifty-cal/tests/integration_test/
+cal_ids:
+    dummy_downloaded: bm9yaWtlci5jby51a19qYW1pZW06MjMwNjUx
+calendar_url: https://webmail.names.co.uk/?_task=calendar&_cal=

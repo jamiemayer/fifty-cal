@@ -11,8 +11,8 @@ from fifty_cal.exceptions import (
     UnauthorizedException,
 )
 
-# TODO move this to config maybe?
-CALENDAR_URL = "https://webmail.names.co.uk/?_task=calendar&_cal="
+# # TODO move this to config maybe?
+# CALENDAR_URL = "https://webmail.names.co.uk/?_task=calendar&_cal="
 
 ERROR_RESPONSE_CODES = {
     403: UnauthorizedException,
@@ -37,7 +37,7 @@ def get_requests_session(cookies: Mapping[str, str]) -> Session:
     return session
 
 
-def get_calendar(calendar_hash: str, session: Session) -> Component:
+def get_calendar(calendar_hash: str, session: Session, calendar_url: str) -> Component:
     """
     Get the most recent version of the calendar.
 
@@ -46,7 +46,7 @@ def get_calendar(calendar_hash: str, session: Session) -> Component:
     vobject `Component` object.
     """
 
-    url = f"{CALENDAR_URL}{calendar_hash}.ics&_action=feed"
+    url = f"{calendar_url}{calendar_hash}.ics&_action=feed"
 
     calendar_request = session.get(url)
 

@@ -110,7 +110,7 @@ def test_latest_in_output(local_cal: Component, update_calendar: callable):
         "DTSTART": local_cal.contents["vevent"][-1].dtstart.value + event_time_delta,
         "DTEND": local_cal.contents["vevent"][-1].dtend.value + event_time_delta,
         "SUMMARY": "Updated Test",
-        "LAST-MODIFIED": dt.datetime.now(tz=dt.timezone.utc),
+        "LAST-MODIFIED": [dt.datetime.now(tz=dt.timezone.utc)],
     }
 
     # Update the calendar
@@ -152,7 +152,7 @@ def test_new_and_updated_events_merged_correctly(
         "DTSTART": local_cal.contents["vevent"][-1].dtstart.value + event_time_delta,
         "DTEND": local_cal.contents["vevent"][-1].dtend.value + event_time_delta,
         "SUMMARY": "Updated Test",
-        "LAST-MODIFIED": dt.datetime.now(tz=dt.timezone.utc),
+        "LAST-MODIFIED": [dt.datetime.now(tz=dt.timezone.utc)],
     }
 
     updated_calendar = update_calendar(local_cal, -1, modifications)

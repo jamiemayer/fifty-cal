@@ -50,3 +50,15 @@ class HttpErrorException(CalendarException):
     """
     Catch all for HTTP Response codes that do not have explicit exceptions defined.
     """
+
+
+class ArgumentConflictException(CalendarException):
+    """
+    Optional arguments passed to Command conflict.
+    """
+
+
+class ConfigurationException(CalendarException):
+    """
+    The config file is invalid.
+    """

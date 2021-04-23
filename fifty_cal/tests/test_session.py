@@ -10,13 +10,20 @@ def setup_mocks(mocker):
     """
     Mock the selenium object methods for testing.
     """
-    mocker.patch("fifty_cal.session.webdriver.Firefox.get")
-    mocker.patch("fifty_cal.session.webdriver.Firefox.find_element_by_id")
-    mocker.patch("fifty_cal.session.webdriver.Firefox.find_element_by_class_name")
-    mocker.patch(
-        "fifty_cal.session.webdriver.Firefox.get_cookies",
-        return_value=[{"name": "test", "value": "test"}],
-    )
+    webdriver = mocker.patch("fifty_cal.session.webdriver")
+    firefox = mocker.MagicMock()
+
+    get_cookies = mocker.MagicMock()
+    get_cookies.return_value = [{"name": "test", "value": "test"}]
+
+    firefox.get_cookies = get_cookies
+    webdriver.Firefox.return_value = firefox
+
+    mocker.patch("fifty_cal.session.ActionChains")
+    mocker.patch("fifty_cal.session.Options")
+    mocker.patch("fifty_cal.session.expected_conditions")
+    mocker.patch("fifty_cal.session.WebDriverWait")
+    mocker.patch("fifty_cal.session.By")
     yield
 
 
@@ -46,11 +53,12 @@ def test_exception_raised_if_unable_to_logout(session, mocker):
     """
     Test that `UnableToLogoutException` is raised if logout button does not appear.
     """
-    mocker.patch(
-        "fifty_cal.session.webdriver.Firefox.find_element_by_class_name",
-        side_effect=NoSuchElementException,
-    )
+    click = mocker.MagicMock()
+    click.click.side_effect = UnableToLogoutException()
+
     session.LOGOUT_RETRY_MAX_SECONDS = 1
+    session.driver = mocker.MagicMock()
+    session.driver.find_element_by_class_name.return_value = click
     with pytest.raises(UnableToLogoutException):
         with session.start_session(username="", password=""):
             pass

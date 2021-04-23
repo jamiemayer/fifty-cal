@@ -31,18 +31,18 @@ def merge(diff: CalendarDiff) -> Component:
         uid = event_diff[0].uid.value
 
         # Get the version that was last modified more recently.
-        event_1_last_modified = event_diff[0].contents["LAST-MODIFIED"].value
-        event_2_last_modified = event_diff[1].contents["LAST-MODIFIED"].value
+        event_1_last_modified = event_diff[0].contents["LAST-MODIFIED"][0].value
+        event_2_last_modified = event_diff[1].contents["LAST-MODIFIED"][0].value
 
         if event_1_last_modified > event_2_last_modified:
             for event in calendar_1.contents["vevent"]:
-                if event.contents["uid"].value == uid:
+                if event.contents["uid"][0].value == uid:
                     updated_events[uid] = event
                     break
             continue
 
         for event in calendar_2.contents["vevent"]:
-            if event.contents["uid"].value == uid:
+            if event.contents["uid"][0].value == uid:
                 updated_events[uid] = event
                 break
         continue
