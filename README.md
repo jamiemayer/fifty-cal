@@ -60,6 +60,28 @@ already in the location, a diff will be run between them and the merged file wil
 saved. On conflict, I.E an event with the same ID exists in both files but do not 
 match, the version with the latest updated timestamp will be kept.
 
+
+## Upload
+
+Upload mode is in active development and is due to be released "**Soon**"<sup>TM.
+
+## Configuration File
+In order to run, a configuration file is needed with a set of mandatory and optional 
+values. 
+
+The configuration file should be a YAML file with the following fields:
+
+- `username` - Your email address E.g: jbloggs@example.co.uk
+- `password` - The password to your email account
+- `output_path` - The location to save downloaded calendars to. This should be a directory not a file.
+- `cal_ids` - A YAML dictionary with the name of the calendar as a key and the unique hash of the calendar as the value.
+- `calendar_url` - Should be `https://webmail.names.co.uk/?_task=calendar&_cal=` 
+  This option only exists for extensibility reasons (probably over-engineering at this point if I'm honest.) and 
+  is not used. Technically, this can be overridden to point to another roundcube 
+  login page, but I am giving no guarantee of this working as it is not tested. 
+
+
+
 ## Windows
 Windows is currently not supported and there are currently no plans to add this 
 functionality.
